@@ -1,5 +1,5 @@
 {
-  "name": "ui",
+  "name": "@nse/ui",
   "version": "0.0.0",
   "main": "./index.tsx",
   "types": "./index.tsx",
@@ -7,8 +7,12 @@
   "devDependencies": {
     "@types/react": "^17.0.37",
     "@types/react-dom": "^17.0.11",
-    "tsconfig": "workspace:*",
     "config": "workspace:*",
+    "tsconfig": "workspace:*",
     "typescript": "^4.5.3"
+  },
+  "dependencies": {
+    "@nse/theme": "workspace:*",
+    "react": "17.0.2"
   }
 }

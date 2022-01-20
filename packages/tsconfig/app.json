@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "app",
+  "extends": "./base.json",
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["es2019", "DOM", "ES6", "DOM.Iterable", "ScriptHost"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "incremental": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "downLevelIteration": true,
+    "jsx": "preserve"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "**/*/dist", "**/*/lib"]
+}

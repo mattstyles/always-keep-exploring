@@ -1,0 +1,35 @@
+{
+  "name": "app",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "parcel src/index.html -p 3000",
+    "build": "rimraf dist && parcel build src/index.html --public-url ./"
+  },
+  "dependencies": {
+    "@nse/textures": "workspace:*",
+    "@nse/theme": "workspace:*",
+    "@nse/tilemap": "workspace:*",
+    "@nse/ui": "workspace:*",
+    "@raid/streams": "^6.2.3",
+    "bitecs": "^0.3.34",
+    "eventemitter3": "^4.0.7",
+    "mathutil": "^4.1.0",
+    "pixi-holga": "^1.0.0",
+    "pixi-spritepool": "^1.0.0",
+    "pixi.js": "^6.2.1",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "valtio": "^1.2.9"
+  },
+  "devDependencies": {
+    "@types/react": "17.0.37",
+    "@types/react-dom": "^17.0.11",
+    "config": "workspace:*",
+    "eslint": "7.32.0",
+    "parcel": "^2.2.1",
+    "rimraf": "^3.0.2",
+    "tsconfig": "workspace:*",
+    "typescript": "^4.5.4"
+  }
+}

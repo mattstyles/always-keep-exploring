@@ -1,0 +1,14 @@
+{
+  "extends": "tsconfig/app.json",
+  "include": ["globals.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "paths": {
+      "~*": ["./src/*"]
+    }
+  }
+}

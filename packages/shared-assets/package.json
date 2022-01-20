@@ -1,0 +1,15 @@
+{
+  "name": "@nse/textures",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.ts",
+  "license": "MIT",
+  "files": [
+    "assets",
+    "src"
+  ],
+  "dependencies": {
+    "mathutil": "^4.1.0",
+    "pixi.js": "^6.2.1"
+  }
+}

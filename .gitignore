@@ -8,10 +8,11 @@ node_modules
 # testing
 coverage
 
-# next.js
+# build
 .next/
 out/
 build
+.parcel-cache
 
 # misc
 .DS_Store

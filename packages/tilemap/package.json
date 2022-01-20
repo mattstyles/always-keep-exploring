@@ -1,0 +1,13 @@
+{
+  "name": "@nse/tilemap",
+  "version": "0.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "license": "MIT",
+  "files": [
+    "src"
+  ],
+  "dependencies": {
+    "mathutil": "^4.1.0"
+  }
+}
