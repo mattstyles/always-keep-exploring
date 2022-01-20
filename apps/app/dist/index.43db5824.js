@@ -24055,14 +24055,40 @@ parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Game", ()=>Game
 );
 var _pixiJs = require("pixi.js");
+var _pixiHolga = require("pixi-holga");
+var _mathutil = require("mathutil");
+var _justRandomInteger = require("just-random-integer");
+var _justRandomIntegerDefault = parcelHelpers.interopDefault(_justRandomInteger);
 var _textures = require("@nse/textures");
+var _tilemap = require("@nse/tilemap");
 class Game {
     constructor({ canvas  }){
         this.onResize = ()=>{
+            const { width , height  } = this.app.screen;
+            const zoom = this.camera.zoom;
+            const tileSize = 10 * zoom;
+            const x = Math.ceil(width / tileSize);
+            const y = Math.ceil(height / tileSize);
+            this.camera.fov = _mathutil.Point.of(x, y);
             console.log({
-                aw: this.app.screen.width,
-                ah: this.app.screen.height
+                width,
+                height,
+                zoom,
+                tileSize,
+                x,
+                y,
+                viewBounds: this.camera
             });
+            this.tiles.removeVisibility();
+            let maxX = 0;
+            this.tiles.render((position, tile, sprite)=>{
+                maxX = position.x > maxX ? position.x : maxX;
+                const projection = this.camera.applyProjection(position);
+                sprite.position.set(projection.x, projection.y);
+                sprite.scale.set(this.camera.scale.x, this.camera.scale.y);
+                sprite.texture = _textures.getTexture(tile);
+            }, _mathutil.Rect.of(this.camera.getViewBounds()));
+            console.log(maxX);
         };
         /**
      * Screen
@@ -24074,11 +24100,42 @@ class Game {
             resizeTo: window,
             view: canvas
         });
-        const sprite = new _pixiJs.Sprite(_textures.getTexture(0));
-        sprite.x = 200;
-        sprite.y = 200;
-        this.app.stage.addChild(sprite);
+        // const sprite = new Sprite(getTexture(2))
+        // sprite.x = 200
+        // sprite.y = 200
+        // this.app.stage.addChild(sprite)
+        const container = new _pixiJs.Container();
+        this.app.stage.addChild(container);
         window.addEventListener('resize', this.onResize);
+        this.camera = _pixiHolga.Camera.of({
+            position: _mathutil.Point.of(0, 10),
+            fov: _mathutil.Point.of(10, 10),
+            zoom: 3,
+            projection: _mathutil.Point.of(10, 10)
+        });
+        const tilemapSize = _mathutil.Point.of(40, 40);
+        this.tiles = new _tilemap.Tilemap({
+            size: tilemapSize,
+            createMapData: ()=>{
+                const tiles = [];
+                for(let y = 0; y < tilemapSize.y; y++)for(let x = 0; x < tilemapSize.x; x++){
+                    if (x === 0 || y === 0 || x === tilemapSize.x - 1 || y === tilemapSize.y - 1) {
+                        tiles.push(0);
+                        continue;
+                    }
+                    tiles.push(_justRandomIntegerDefault.default(1, 24));
+                }
+                return tiles;
+            }
+        });
+        this.tiles.pool.attach(container);
+        // For now, just render the tilemap once
+        this.tiles.render((position, tile, sprite)=>{
+            const projection = this.camera.applyProjection(position);
+            sprite.position.set(projection.x, projection.y);
+            sprite.scale.set(this.camera.scale.x, this.camera.scale.y);
+            sprite.texture = _textures.getTexture(tile);
+        });
     }
     release() {
         this.app.destroy(true, {
@@ -24088,7 +24145,7 @@ class Game {
     }
 }
 
-},{"pixi.js":"h9lwH","@nse/textures":"gwGrm","@parcel/transformer-js/src/esmodule-helpers.js":"efj0a"}],"h9lwH":[function(require,module,exports) {
+},{"pixi.js":"h9lwH","@nse/textures":"gwGrm","@parcel/transformer-js/src/esmodule-helpers.js":"efj0a","mathutil":"89W8M","just-random-integer":"3lLOq","@nse/tilemap":"9PgBV","pixi-holga":"jiXmf"}],"h9lwH":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "utils", ()=>_utils
@@ -61751,7 +61808,7 @@ function get(id) {
     return texture;
 }
 function getTextureTile(x, y, base1, size) {
-    return new _pixiJs.Texture(base1, new _pixiJs.Rectangle(x, y, x + size.x, y + size.y));
+    return new _pixiJs.Texture(base1, new _pixiJs.Rectangle(x * size.x, y * size.y, size.x, size.y));
 }
 function setTextures(base2, tileSize, textureSize) {
     const textures1 = new Map();
@@ -61806,7 +61863,7 @@ var _wrap = require("./wrap");
 var _euclidean = require("./euclidean");
 var _manhattan = require("./manhattan");
 
-},{"./point":"le9qi","./rect":false,"./vector2":"7zyIC","./ray":false,"./lerp":false,"./toDegrees":false,"./toRadians":false,"./min":false,"./max":false,"./clamp":false,"./wrap":false,"./euclidean":false,"./manhattan":false,"@parcel/transformer-js/src/esmodule-helpers.js":"efj0a"}],"le9qi":[function(require,module,exports) {
+},{"./point":"le9qi","./rect":"bLPVX","./vector2":"7zyIC","./ray":false,"./lerp":false,"./toDegrees":false,"./toRadians":false,"./min":false,"./max":false,"./clamp":"hNCpH","./wrap":false,"./euclidean":false,"./manhattan":false,"@parcel/transformer-js/src/esmodule-helpers.js":"efj0a"}],"le9qi":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Point", ()=>Point
@@ -62051,7 +62108,155 @@ class Vector2 {
     }
 }
 
-},{"./inputScalar":"h6jeu","@parcel/transformer-js/src/esmodule-helpers.js":"efj0a"}],"1GBgj":[function(require,module,exports) {
+},{"./inputScalar":"h6jeu","@parcel/transformer-js/src/esmodule-helpers.js":"efj0a"}],"bLPVX":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Rect", ()=>Rect
+);
+var _vector2 = require("./vector2");
+var _inputScalar = require("./inputScalar");
+class Rect {
+    static of(c, d, e, f) {
+        return c instanceof Rect ? new Rect(c.pos[0], c.pos[1], c.pos[2], c.pos[3]) : new Rect(c, d, e, f);
+    }
+    static area(g) {
+        if (!g || !(g instanceof Rect)) throw new Error("Specify rect to translate");
+        return (g.pos[2] - g.pos[0]) * (g.pos[3] - g.pos[1]);
+    }
+    static translate(h, i = 0, j = 0) {
+        if (!h || !(h instanceof Rect)) throw new Error("Specify rect to translate");
+        return new Rect(h.pos[0] + i, h.pos[1] + j, h.pos[2] + i, h.pos[3] + j);
+    }
+    static scale(k, l) {
+        if (!k || !(k instanceof Rect)) throw new Error("Specify rect to translate");
+        return new Rect(k.pos[0], k.pos[1], k.pos[0] + k.width * l, k.pos[1] + k.height * l);
+    }
+    static constrict(m, n, o) {
+        if (!m || !(m instanceof Rect)) throw new Error("Specify rect to translate");
+        return null == o && (o = n), new Rect(m.pos[0] + n, m.pos[1] + o, m.pos[2] - n, m.pos[3] - o);
+    }
+    get width() {
+        return this.pos[2] - this.pos[0];
+    }
+    get height() {
+        return this.pos[3] - this.pos[1];
+    }
+    get area() {
+        return this.width * this.height;
+    }
+    get origin() {
+        return [
+            this.pos[0],
+            this.pos[1]
+        ];
+    }
+    get x() {
+        return this.pos[0];
+    }
+    get y() {
+        return this.pos[1];
+    }
+    get x1() {
+        return this.pos[0];
+    }
+    get y1() {
+        return this.pos[1];
+    }
+    get x2() {
+        return this.pos[2];
+    }
+    get y2() {
+        return this.pos[3];
+    }
+    setWidth(p) {
+        return this.pos[2] = this.pos[0] + p, this;
+    }
+    setHeight(q) {
+        return this.pos[3] = this.pos[1] + q, this;
+    }
+    floor() {
+        return this.pos = this.pos.map(Math.floor), this;
+    }
+    ceil() {
+        return this.pos = this.pos.map(Math.ceil), this;
+    }
+    round() {
+        return this.pos[0] = Math.floor(this.pos[0]), this.pos[1] = Math.floor(this.pos[1]), this.pos[2] = Math.ceil(this.pos[2]), this.pos[3] = Math.ceil(this.pos[3]), this;
+    }
+    equal(r, s, t, u) {
+        return r instanceof Rect ? this.equal(...r.pos) : this.pos[0] === r && this.pos[1] === s && this.pos[2] === t && this.pos[3] === u;
+    }
+    equals(v, w, x, y) {
+        return v instanceof Rect ? this.equal(...v.pos) : this.equal(v, w, x, y);
+    }
+    translate(z = 0, A = 0) {
+        return this.pos = [
+            this.pos[0] + z,
+            this.pos[1] + A,
+            this.pos[2] + z,
+            this.pos[3] + A, 
+        ], this;
+    }
+    scale(B) {
+        return this.pos = [
+            this.pos[0],
+            this.pos[1],
+            this.pos[0] + this.width * B,
+            this.pos[1] + this.height * B, 
+        ], this;
+    }
+    constrict(C, D) {
+        return null == D && (D = C), this.pos = [
+            this.pos[0] + C,
+            this.pos[1] + D,
+            this.pos[2] - C,
+            this.pos[3] - D, 
+        ], this;
+    }
+    _containsRect(E) {
+        const { pos: F  } = this;
+        return E.pos[0] >= F[0] && E.pos[1] >= F[1] && E.pos[2] <= F[2] && E.pos[3] <= F[3];
+    }
+    contains(G, H) {
+        if (G instanceof Rect) return this._containsRect(G);
+        if (null == H) {
+            const [I, J] = _inputScalar.massageInputPoint(G);
+            return this.contains(I, J);
+        }
+        const { pos: K  } = this;
+        return G >= K[0] && H >= K[1] && G <= K[2] && H <= K[3];
+    }
+    slope() {
+        return new _vector2.Vector2(this.pos[2] - this.pos[0], this.pos[3] - this.pos[1]);
+    }
+    constructor(L, M, N, O){
+        this.pos = [
+            L,
+            M,
+            N,
+            O
+        ];
+    }
+}
+
+},{"./vector2":"7zyIC","./inputScalar":"h6jeu","@parcel/transformer-js/src/esmodule-helpers.js":"efj0a"}],"hNCpH":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "clamp", ()=>clamp
+);
+function _performClamp(a, b, c) {
+    return a < b ? b : a > c ? c : a;
+}
+function _curryClamp(a, b) {
+    return function(c) {
+        return _performClamp(c, a, b);
+    };
+}
+function clamp(a, b, c) {
+    return void 0 === c ? _curryClamp(a, b) : _performClamp(c, a, b);
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"efj0a"}],"1GBgj":[function(require,module,exports) {
 module.exports = require('./helpers/bundle-url').getBundleURL('inhgX') + "test.5d56e3f7.png" + "?" + Date.now();
 
 },{"./helpers/bundle-url":"3Pbkd"}],"3Pbkd":[function(require,module,exports) {
@@ -62089,6 +62294,238 @@ exports.getBundleURL = getBundleURLCached;
 exports.getBaseURL = getBaseURL;
 exports.getOrigin = getOrigin;
 
-},{}]},["4wZoy","7Vp3C","igNal"], "igNal", "parcelRequirea5a0")
+},{}],"3lLOq":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "default", ()=>numberRandomInteger
+);
+var numberRandomInteger = random;
+function random(n1, n2) {
+    if (typeof n1 == 'undefined') n1 = 1;
+    if (typeof n2 == 'undefined') n2 = 0;
+    if (typeof n1 != 'number' || typeof n2 !== 'number') throw new Error('just-random: arguments must be numbers');
+    if (n1 > n2) {
+        let temp = n1;
+        n1 = n2;
+        n2 = temp;
+    }
+    return ~~(Math.random() * (trunc(n2) + 1 - trunc(n1))) + trunc(n1);
+}
+function trunc(n) {
+    return Math.trunc ? Math.trunc(n) : Math.floor(n) + (n < 0 ? 1 : 0);
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"efj0a"}],"9PgBV":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Tilemap", ()=>_tilemap.Tilemap
+);
+var _tilemap = require("./tilemap");
+
+},{"./tilemap":"7bsSt","@parcel/transformer-js/src/esmodule-helpers.js":"efj0a"}],"7bsSt":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Tilemap", ()=>Tilemap
+);
+var _mathutil = require("mathutil");
+var _pixiSpritepool = require("pixi-spritepool");
+var _pixiJs = require("pixi.js");
+class Tilemap {
+    constructor({ size , createMapData  }){
+        this.size = size;
+        this.data = createMapData();
+        this.pool = _pixiSpritepool.SpritePool.of({
+            length: size.x * size.y,
+            onCreateItem: ()=>{
+                const sprite = new _pixiJs.Sprite();
+                sprite.visible = true;
+                return sprite;
+            }
+        });
+    }
+    inBounds(position) {
+        return !(position.x < 0 || position.y < 0 || position.x >= this.size.x || position.y >= this.size.y);
+    }
+    get(position) {
+        if (!this.inBounds(position)) return null;
+        return this.data[to2d(position.x, position.y, this.size.x)];
+    }
+    iterate(cb, region) {
+        // If no region is supplied then iterate over the entire structure
+        if (region == null) region = _mathutil.Rect.of(0, 0, this.size.x, this.size.y);
+        const startX = _mathutil.clamp(0, this.size.x, region.pos[0]);
+        const endX = _mathutil.clamp(0, this.size.x, region.pos[2]);
+        const startY = _mathutil.clamp(0, this.size.y, region.pos[1]);
+        const endY = _mathutil.clamp(0, this.size.y, region.pos[3]);
+        let pos = null;
+        let tile = null;
+        for(let y = startY; y < endY; y++)for(let x = startX; x < endX; x++){
+            pos = _mathutil.Point.of(x, y);
+            tile = this.get(pos);
+            if (tile == null) continue;
+            cb(pos, tile);
+        }
+    }
+    render(cb, region) {
+        let count = 0;
+        function iterator(pos, tile) {
+            const sprite = this.pool.get(count);
+            sprite.visible = true;
+            cb(pos, tile, sprite);
+            count = count + 1;
+        }
+        this.iterate(iterator.bind(this), region);
+    }
+    // This must iterate every possible sprite so we don't want to do it
+    // unnecessarily. We could currently vastly over provision the sprite pool,
+    // we should really assign the spritepool length based on how many we actually
+    // want to draw, which is dependent on camera viewport.
+    removeVisibility() {
+        this.pool.each((sprite)=>{
+            sprite.visible = false;
+        });
+    }
+}
+function to2d(x, y, width) {
+    return y * width + x;
+}
+
+},{"mathutil":"89W8M","pixi-spritepool":"3S5BA","pixi.js":"h9lwH","@parcel/transformer-js/src/esmodule-helpers.js":"efj0a"}],"3S5BA":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "SpritePool", ()=>SpritePool
+);
+var _pixiJs = require("pixi.js");
+function _onCreateItem() {
+    const b = new _pixiJs.Sprite();
+    return b.visible = !1, b;
+}
+function _onRemoveItem(a) {
+    a.destroy();
+}
+class SpritePool {
+    static of(b) {
+        return new SpritePool(b);
+    }
+    static attachPool(c, d) {
+        let e = c.pool.length;
+        for(; e--;)d.addChild(c.pool[e]);
+    }
+    attach(f, g) {
+        g || (g = this.pool);
+        let h = g.length;
+        for(; h--;)f.addChild(g[h]);
+    }
+    detach(i, j) {
+        j || (j = this.pool);
+        let k = j.length;
+        for(; k--;)i.addChild(j[k]), i.removeChild(j[k]);
+    }
+    get(l) {
+        return this.pool[l];
+    }
+    get length() {
+        return this.pool.length;
+    }
+    map(m) {
+        let n = this.pool.length;
+        for(; n--;)this.pool[n] = m(this.pool[n]);
+    }
+    each(o) {
+        let p = this.pool.length;
+        for(; p--;)o(this.pool[p]);
+    }
+    malloc(q) {
+        const r = Array.from({
+            length: q
+        }, this.onCreateItem);
+        return this.pool = this.pool.concat(r), this.container && this.attach(this.container, r), r;
+    }
+    free(s) {
+        const t = this.pool.splice(this.pool.length - s, s);
+        this.container && this.detach(this.container, t);
+        let u = t.length;
+        for(; u--;)this.onRemoveItem(t[u]);
+        return t;
+    }
+    constructor({ length: v = 10 , container: w = null , onCreateItem: x = _onCreateItem , onRemoveItem: y = _onRemoveItem  }){
+        this.onCreateItem = _onCreateItem, this.onRemoveItem = _onRemoveItem, this.pool = [], this.container = w, this.onCreateItem = x, this.onRemoveItem = y, this.malloc(v);
+    }
+}
+
+},{"pixi.js":"h9lwH","@parcel/transformer-js/src/esmodule-helpers.js":"efj0a"}],"jiXmf":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Camera", ()=>Camera
+);
+var _mathutil = require("mathutil");
+class Camera {
+    static of(c = {
+    }) {
+        return new Camera(c);
+    }
+    get frustrum() {
+        return this._frustrum;
+    }
+    set projection(d) {
+        this._projection = d;
+    }
+    get projection() {
+        return this._projection;
+    }
+    set fov(e) {
+        this._fov = e, this._frustrum = this.getViewBounds();
+    }
+    get fov() {
+        return this._fov;
+    }
+    set position(f) {
+        this._position = f, this._frustrum = this.getViewBounds();
+    }
+    get x() {
+        return this._position.x;
+    }
+    get y() {
+        return this._position.y;
+    }
+    set x(g) {
+        this._position.x = g, this._frustrum = this.getViewBounds();
+    }
+    set y(h) {
+        this._position.y = h, this._frustrum = this.getViewBounds();
+    }
+    setZoom(i) {
+        this._zoom = i, this._frustrum = this.getViewBounds();
+    }
+    get zoom() {
+        return this._zoom;
+    }
+    get scale() {
+        return _mathutil.Point.of(this._zoom, this._zoom);
+    }
+    getViewBounds() {
+        return _mathutil.Rect.of(this.x - this.fov.x / this.zoom, this.y - this.fov.y / this.zoom, this.x + this.fov.x / this.zoom, this.y + this.fov.y / this.zoom);
+    }
+    isPointVisible(j) {
+        return j.x <= this.frustrum.pos[2] && j.x >= this.frustrum.pos[0] && j.y <= this.frustrum.pos[3] && j.y >= this.frustrum.pos[1];
+    }
+    isRectVisible(k) {
+        return !(k.pos[3] < this.frustrum.pos[1]) && !(k.pos[1] > this.frustrum.pos[3]) && !(k.pos[2] < this.frustrum.pos[0]) && !(k.pos[0] > this.frustrum.pos[2]);
+    }
+    applyProjection(l) {
+        const m = this.projection.x * this.zoom, n = this.projection.y * this.zoom;
+        return _mathutil.Point.of(l.x * m - this._frustrum.pos[0] * m, l.y * n - this._frustrum.pos[1] * n);
+    }
+    toWorldCoords(o) {
+        const p = this.projection.x * this.zoom, q = this.projection.y * this.zoom;
+        return _mathutil.Point.of(Math.floor(o.x / p + this._frustrum.pos[0]), Math.floor(o.y / q + this._frustrum.pos[1]));
+    }
+    constructor({ position: r = _mathutil.Point.of(10, 10) , fov: s = _mathutil.Point.of(10, 10) , zoom: t = 1 , projection: u = _mathutil.Point.of(1, 1)  } = {
+    }){
+        this._position = r, this._fov = s, this._zoom = t, this._projection = u, this._frustrum = this.getViewBounds();
+    }
+}
+
+},{"mathutil":"89W8M","@parcel/transformer-js/src/esmodule-helpers.js":"efj0a"}]},["4wZoy","7Vp3C","igNal"], "igNal", "parcelRequirea5a0")
 
 //# sourceMappingURL=index.43db5824.js.map

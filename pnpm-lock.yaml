@@ -23,6 +23,7 @@ importers:
       config: workspace:*
       eslint: 7.32.0
       eventemitter3: ^4.0.7
+      just-random-integer: ^4.0.0
       mathutil: ^4.1.0
       parcel: ^2.2.1
       pixi-holga: ^1.0.0
@@ -42,6 +43,7 @@ importers:
       '@raid/streams': 6.2.3
       bitecs: 0.3.34
       eventemitter3: 4.0.7
+      just-random-integer: 4.0.0
       mathutil: 4.1.0
       pixi-holga: 1.0.0
       pixi-spritepool: 1.0.0
@@ -119,9 +121,15 @@ importers:
 
   packages/tilemap:
     specifiers:
+      '@nse/textures': workspace:*
       mathutil: ^4.1.0
+      pixi-spritepool: ^1.0.0
+      pixi.js: ^6.2.1
     dependencies:
+      '@nse/textures': link:../shared-assets
       mathutil: 4.1.0
+      pixi-spritepool: 1.0.0
+      pixi.js: 6.2.1
 
   packages/tsconfig:
     specifiers: {}
@@ -3682,6 +3690,10 @@ packages:
     dependencies:
       array-includes: 3.1.4
       object.assign: 4.1.2
+    dev: false
+
+  /just-random-integer/4.0.0:
+    resolution: {integrity: sha512-J0u8w06FBRO2+bHVgPpzO8nsUV2ES45RsBMxxBJxnYd7e6jp3ofJAh/cJkYtGZlnRgKxmgCgBw2DI1Cwk6pcdA==}
     dev: false
 
   /language-subtag-registry/0.3.21:

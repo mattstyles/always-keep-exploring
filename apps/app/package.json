@@ -14,6 +14,7 @@
     "@raid/streams": "^6.2.3",
     "bitecs": "^0.3.34",
     "eventemitter3": "^4.0.7",
+    "just-random-integer": "^4.0.0",
     "mathutil": "^4.1.0",
     "pixi-holga": "^1.0.0",
     "pixi-spritepool": "^1.0.0",

@@ -24,7 +24,10 @@ function getTextureTile(
   base: BaseTexture,
   size: Point
 ): Texture {
-  return new Texture(base, new Rectangle(x, y, x + size.x, y + size.y))
+  return new Texture(
+    base,
+    new Rectangle(x * size.x, y * size.y, size.x, size.y)
+  )
 }
 
 function setTextures(
