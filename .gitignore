@@ -11,6 +11,7 @@ coverage
 # build
 .next/
 out/
+dist
 build
 .parcel-cache
 

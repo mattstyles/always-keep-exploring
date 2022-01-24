@@ -8,10 +8,13 @@ import random from 'just-random-integer'
 import {getTexture} from '@nse/textures'
 import {Tilemap} from '@nse/tilemap'
 
+import {TilemapRenderer} from './tilemapRenderer'
+
 export class Game {
   app: Application
   tiles: Tilemap
   camera: Camera
+  tileRenderer: TilemapRenderer
 
   constructor({canvas}: {canvas: HTMLCanvasElement}) {
     /**
@@ -37,8 +40,8 @@ export class Game {
     window.addEventListener('resize', this.onResize)
 
     this.camera = Camera.of({
-      position: Point.of(0, 10),
-      fov: Point.of(10, 10),
+      position: Point.of(20, 20),
+      fov: Point.of(20, 20),
       zoom: 3,
       projection: Point.of(10, 10),
     })
@@ -67,15 +70,25 @@ export class Game {
         return tiles
       },
     })
-    this.tiles.pool.attach(container)
 
-    // For now, just render the tilemap once
-    this.tiles.render((position: Point, tile: Tile, sprite: Sprite) => {
-      const projection = this.camera.applyProjection(position)
-      sprite.position.set(projection.x, projection.y)
-      sprite.scale.set(this.camera.scale.x, this.camera.scale.y)
-      sprite.texture = getTexture(tile)
+    this.tileRenderer = new TilemapRenderer({
+      camera: this.camera,
+      container: container,
     })
+
+    window.camera = this.camera
+    window.tiles = this.tiles
+    window.application = this.app
+    window.render = this.render
+
+    window.addEventListener('keydown', this.onKeydown)
+
+    // Set the size and camera up
+    this.onResize()
+  }
+
+  render = () => {
+    this.tileRenderer.render(this.tiles)
   }
 
   onResize = () => {
@@ -83,31 +96,68 @@ export class Game {
     const zoom = this.camera.zoom
     const tileSize = 10 * zoom
 
-    const x = Math.ceil(width / tileSize)
-    const y = Math.ceil(height / tileSize)
+    const x = Math.ceil((width / tileSize) * 0.5)
+    const y = Math.ceil((height / tileSize) * 0.5)
 
-    this.camera.fov = Point.of(x, y)
+    this.camera.fov = Point.of(x * zoom, y * zoom)
 
-    console.log({
-      width,
-      height,
-      zoom,
-      tileSize,
-      x,
-      y,
-      viewBounds: this.camera,
-    })
+    // this.tiles.removeVisibility()
+    this.render()
+  }
 
-    this.tiles.removeVisibility()
-    let maxX = 0
-    this.tiles.render((position: Point, tile: Tile, sprite: Sprite) => {
-      maxX = position.x > maxX ? position.x : maxX
-      const projection = this.camera.applyProjection(position)
-      sprite.position.set(projection.x, projection.y)
-      sprite.scale.set(this.camera.scale.x, this.camera.scale.y)
-      sprite.texture = getTexture(tile)
-    }, Rect.of(this.camera.getViewBounds()))
-    console.log(maxX)
+  // Placeholder for testing camera
+  onKeydown = (event) => {
+    switch (event.key) {
+      case 'a':
+        // decrease x fov
+        this.camera.fov = Point.of(this.camera.fov.x - 1, this.camera.fov.y)
+        break
+      case 'd':
+        // increase x fov
+        this.camera.fov = Point.of(this.camera.fov.x + 1, this.camera.fov.y)
+        break
+      case 's':
+        // descrease y fov
+        this.camera.fov = Point.of(this.camera.fov.x, this.camera.fov.y - 1)
+        break
+      case 'w':
+        // increase y fov
+        this.camera.fov = Point.of(this.camera.fov.x, this.camera.fov.y + 1)
+        break
+      case 'q':
+        // zoom out
+        this.camera.setZoom(this.camera.zoom - 1)
+        break
+      case 'e':
+        // zoom in
+        this.camera.setZoom(this.camera.zoom + 1)
+        break
+      case 'ArrowUp':
+        // decrease y pos
+        this.camera.y = this.camera.y - 1
+        break
+      case 'ArrowDown':
+        // increase y pos
+        this.camera.y = this.camera.y + 1
+        break
+      case 'ArrowLeft':
+        // decrease x pos
+        this.camera.x = this.camera.x - 1
+        break
+      case 'ArrowRight':
+        // increase x pos
+        this.camera.x = this.camera.x + 1
+        break
+    }
+
+    console.log(
+      [this.camera.x, this.camera.y],
+      this.camera.zoom,
+      this.camera.fov.pos,
+      this.camera.getViewBounds().pos
+    )
+
+    this.render()
   }
 
   release() {
